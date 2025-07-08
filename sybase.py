@@ -50,6 +50,29 @@ def send_email(to_address, subject, body):
         server.login(SMTP_CONFIG['username'], SMTP_CONFIG['password'])
         server.sendmail(SMTP_CONFIG['from'], to_address, msg.as_string())
 
+
+def send_email_with_attachment(to_address, subject, body_text, attachment_path):
+    msg = MIMEMultipart()
+    msg["Subject"] = subject
+    msg["From"] = SMTP_CONFIG["from"]
+    msg["To"] = to_address
+
+    # Attach plain text body
+    msg.attach(MIMEText(body_text, "plain"))
+
+    # Attach the Excel file
+    with open(attachment_path, "rb") as f:
+        part = MIMEBase("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        part.set_payload(f.read())
+        encoders.encode_base64(part)
+        part.add_header("Content-Disposition", f"attachment; filename={os.path.basename(attachment_path)}")
+        msg.attach(part)
+
+    with smtplib.SMTP(SMTP_CONFIG['host'], SMTP_CONFIG['port']) as server:
+        server.starttls()
+        server.login(SMTP_CONFIG['username'], SMTP_CONFIG['password'])
+        server.sendmail(SMTP_CONFIG['from'], to_address, msg.as_string())
+
 def main(date_str, email_to):
     try:
         conn = get_connection()
