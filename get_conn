@@ -1,0 +1,14 @@
+netstat -tnp 2>/dev/null | awk '
+/^tcp/ {
+    split($7, a, "/");      # Split PID/Program
+    pid = a[1];
+    if (pid != "-") {
+        count[pid]++;
+    }
+}
+END {
+    printf "%-10s %s\n", "PID", "Connection_Count"
+    for (p in count) {
+        printf "%-10s %s\n", p, count[p]
+    }
+}' | sort -k2 -nr
